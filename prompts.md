@@ -26,10 +26,13 @@ Borra el ejemplo de abajo cuando escribas el primero.
 **Herramienta:** Claude Code
 
 ```
-Este es el ejemplo. Bórralo.
-
-El prompt va aquí dentro, entero y con sus saltos de línea,
-para que se sepa dónde empieza y dónde acaba.
-```
-
-**Qué salió:** (opcional, una línea) funcionó a la primera / tuve que insistir / me inventó una ruta que no existe.
+escribe la spect  de lo que el sistema hace hoy  y dejaolo en un archivo verdionado denro del proyecto ebn la ruta docs/spect-viva/GHS.md .
+las dos capas y solo ese vertical, lo que pasa por la API y lo que se ve en pantalla, y nada  que no sean cuentas y acceso. 
+usa el siguiente formato y n oes negociable
+arriba un ## putpode de una o dos fases para que exista capability
+debajo ## requeriments ,y colgado de él  ### requeriment 
+bajo cada requisito almenos un ##### scenario, con dos viñetas:**WHEN** y **THEN**, no hay casilla para GUIVEN , la precondicion se mete dentro del WHEN , en castellano salvo las mayusculas de laRFC.
+sigue las siguientes reglas :
+1. Nada de ADDED, MODIFIED,ni REMOVED
+2.solo comportamiento observable desde fuera : ni nombre de clase , ni de archivos, ni rutas de código
+3 no toques código
