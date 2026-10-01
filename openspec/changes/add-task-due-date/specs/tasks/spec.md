@@ -26,8 +26,8 @@ El sistema SHALL permitir que una tarea tenga una fecha de vencimiento de calend
 - **WHEN** se envía `{ "dueDate": null }` sobre una tarea con fecha
 - **THEN** el sistema responde 200 con `dueDate` a `null` y `isOverdue` a `false`
 
-#### Scenario: Quitar la fecha con cadena vacía
-- **WHEN** se envía `{ "dueDate": "" }` sobre una tarea con fecha
+#### Scenario: Quitar la fecha con cadena vacía o en blanco
+- **WHEN** se envía `{ "dueDate": "" }` o un `dueDate` formado solo por espacios sobre una tarea con fecha
 - **THEN** el sistema responde 200 con `dueDate` a `null` y `isOverdue` a `false`
 
 #### Scenario: Fecha ya pasada aceptada
@@ -39,7 +39,7 @@ El sistema SHALL permitir que una tarea tenga una fecha de vencimiento de calend
 - **THEN** el sistema responde 422 con un error sobre `dueDate` y la tarea conserva la fecha que tuviera
 
 #### Scenario: Fecha incompleta o con hora
-- **WHEN** se envía un `dueDate` incompleto, como `2026-10`, o con hora, como `2026-10-05T10:00:00`, formado solo por espacios o que no es texto
+- **WHEN** se envía un `dueDate` incompleto, como `2026-10`, o con hora, como `2026-10-05T10:00:00`, o que no es texto
 - **THEN** el sistema responde 422 con un error sobre `dueDate` y la tarea conserva la fecha que tuviera
 
 #### Scenario: Otras ediciones no tocan la fecha
