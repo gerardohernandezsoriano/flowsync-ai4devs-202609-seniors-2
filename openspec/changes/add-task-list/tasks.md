@@ -18,19 +18,19 @@
 
 ## 3. Frontend: capa de API y tipos
 
-- [ ] 3.1 Añadir los tipos `Task` y `TaskStatus` a `frontend/src/lib/types.ts`; verificar con `npm run build` en `frontend/`
-- [ ] 3.2 Añadir a `frontend/src/lib/api.ts` `listTasks`, `createTask` y `updateTask` (ampliando el tipo de método con `PATCH`) y extender las etiquetas y la traducción de errores con `title` (obligatorio y longitud, en lenguaje corriente, indicando el máximo de 255) y con el error de `status`; verificar con `npm run build` y `npm run lint`
+- [x] 3.1 Añadir los tipos `Task` y `TaskStatus` a `frontend/src/lib/types.ts`; verificar con `npm run build` en `frontend/`
+- [x] 3.2 Añadir a `frontend/src/lib/api.ts` `listTasks`, `createTask` y `updateTask` (ampliando el tipo de método con `PATCH`) y extender las etiquetas y la traducción de errores con `title` (obligatorio y longitud, en lenguaje corriente, indicando el máximo de 255) y con el error de `status`; verificar con `npm run build` y `npm run lint`
 
 ## 4. Frontend: pantalla de tareas
 
-- [ ] 4.1 Crear `frontend/src/pages/tasks-page.tsx` que pide la lista al montar, muestra indicador de carga y un aviso en castellano si falla, y pinta cada fila con título, nombre del responsable («Sin nombre» si es `null`) y estado como Pendiente, En curso o Hecho, en el orden recibido, sin fechas, sin presencia y sin vista «mis tareas»; verificar a mano en el navegador con tareas de dos cuentas distintas y con `npm run build`
-- [ ] 4.2 Añadir el formulario de creación con un único campo de título y un botón, sin responsable, estado ni fecha, usando `useAuthForm`: botón deshabilitado durante el envío, aviso junto al campo para título en blanco y para título demasiado largo conservando el texto, y recarga de la lista tras crear con el campo vacío; verificar a mano creando una tarea, intentando una en blanco y otra de 256 caracteres
-- [ ] 4.3 Añadir el estado vacío (texto que explica la lista y el formulario para crear la primera, en lugar de una lista vacía) y verificar a mano con una base sin tareas y creando la primera
-- [ ] 4.4 Añadir a cada fila el `<select>` nativo con exactamente Pendiente, En curso y Hecho y el actual marcado, con cambio optimista y sin confirmación, que revierte la fila y muestra un aviso si `updateTask` falla; verificar a mano cambiando el estado de una tarea propia y de una ajena, y parando el backend para comprobar la reversión
+- [x] 4.1 Crear `frontend/src/pages/tasks-page.tsx` que pide la lista al montar, muestra indicador de carga y un aviso en castellano si falla, y pinta cada fila con título, nombre del responsable («Sin nombre» si es `null`) y estado como Pendiente, En curso o Hecho, en el orden recibido, sin fechas, sin presencia y sin vista «mis tareas»; verificar a mano en el navegador con tareas de dos cuentas distintas y con `npm run build`
+- [x] 4.2 Añadir el formulario de creación con un único campo de título y un botón, sin responsable, estado ni fecha, usando `useAuthForm`: botón deshabilitado durante el envío, aviso junto al campo para título en blanco y para título demasiado largo conservando el texto, y recarga de la lista tras crear con el campo vacío; verificar a mano creando una tarea, intentando una en blanco y otra de 256 caracteres
+- [x] 4.3 Añadir el estado vacío (texto que explica la lista y el formulario para crear la primera, en lugar de una lista vacía) y verificar a mano con una base sin tareas y creando la primera
+- [x] 4.4 Añadir a cada fila el `<select>` nativo con exactamente Pendiente, En curso y Hecho y el actual marcado, con cambio optimista y sin confirmación, que revierte la fila y muestra un aviso si `updateTask` falla; verificar a mano cambiando el estado de una tarea propia y de una ajena, y parando el backend para comprobar la reversión
 
 ## 5. Frontend: rutas y navegación
 
-- [ ] 5.1 Registrar `/tasks` dentro de `ProtectedRoute` en `frontend/src/routes/app-routes.tsx`, cambiar la ruta `*` y el redirect de `PublicOnlyRoute` de `/profile` a `/tasks`, y añadir enlaces entre la lista y `frontend/src/pages/profile-page.tsx`; verificar a mano que sin sesión `/tasks` lleva a `/login`, que tras entrar o registrarse se ve la lista, que una dirección desconocida lleva a `/tasks` y que los enlaces van y vuelven con la sesión intacta
+- [x] 5.1 Registrar `/tasks` dentro de `ProtectedRoute` en `frontend/src/routes/app-routes.tsx`, cambiar la ruta `*` y el redirect de `PublicOnlyRoute` de `/profile` a `/tasks`, y añadir enlaces entre la lista y `frontend/src/pages/profile-page.tsx`; verificar a mano que sin sesión `/tasks` lleva a `/login`, que tras entrar o registrarse se ve la lista, que una dirección desconocida lleva a `/tasks` y que los enlaces van y vuelven con la sesión intacta
 
 ## 6. Documentación e integración
 

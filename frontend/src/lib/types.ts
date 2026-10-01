@@ -30,3 +30,16 @@ export type LoginPayload = {
   email: string
   password: string
 }
+
+export type TaskStatus = 'pending' | 'in_progress' | 'done'
+
+/**
+ * Espejo de `TaskTransformer` del backend. El responsable solo trae su nombre:
+ * ni correo, ni id, ni fechas.
+ */
+export type Task = {
+  id: number
+  title: string
+  status: TaskStatus
+  assignee: { fullName: string | null }
+}

@@ -1,4 +1,11 @@
-import type { AuthResult, LoginPayload, SignupPayload, User } from '@/lib/types'
+import type {
+  AuthResult,
+  LoginPayload,
+  SignupPayload,
+  Task,
+  TaskStatus,
+  User,
+} from '@/lib/types'
 
 const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:3333'
 
@@ -35,16 +42,30 @@ const FIELD_LABELS: Record<string, string> = {
   email: 'el email',
   password: 'la contraseña',
   passwordConfirmation: 'la confirmación de la contraseña',
+  title: 'el título',
+  status: 'el estado',
+  assigneeId: 'el responsable',
 }
 
 const label = (field?: string) => FIELD_LABELS[field ?? ''] ?? 'el campo'
 
 /**
  * Traduce un error de VineJS a una frase que el usuario pueda entender.
- * Cubre todas las reglas que usa `app/validators/user.ts` en el backend.
+ * Cubre las reglas de los validadores de usuario y de tarea del backend.
  */
 function translate(error: BackendError): string {
   const { rule, field, meta } = error
+
+  if (field === 'title') {
+    if (rule === 'maxLength') {
+      return `El título es demasiado largo: admite hasta ${meta?.max} caracteres.`
+    }
+    // Vacío, en blanco, ausente o sin formato de texto: en todos los casos
+    // lo que la persona tiene que hacer es escribir un título.
+    return 'Escribe un título para la tarea.'
+  }
+
+  if (rule === 'enum') return 'Ese estado no es válido.'
 
   switch (rule) {
     case 'database.unique':
@@ -79,6 +100,10 @@ function toApiError(status: number, body: unknown): ApiError {
     )
   }
 
+  if (status === 404) {
+    return new ApiError('Esa tarea ya no existe. Recarga la lista.', status)
+  }
+
   // `User.verifyCredentials` lanza E_INVALID_CREDENTIALS con un 400 sin `field`.
   if (status === 400) {
     return new ApiError('El email o la contraseña no son correctos.', status)
@@ -102,7 +127,7 @@ function toApiError(status: number, body: unknown): ApiError {
 }
 
 type RequestOptions = {
-  method?: 'GET' | 'POST'
+  method?: 'GET' | 'POST' | 'PATCH'
   body?: unknown
   token?: string | null
 }
@@ -163,4 +188,30 @@ export function logout(token: string): Promise<void> {
   return request('/api/v1/account/logout', { method: 'POST', token }).then(
     () => undefined,
   )
+}
+
+export function listTasks(token: string): Promise<Task[]> {
+  return request<{ data: Task[] }>('/api/v1/tasks', { token }).then(
+    (response) => response.data,
+  )
+}
+
+export function createTask(token: string, title: string): Promise<Task> {
+  return request<{ data: Task }>('/api/v1/tasks', {
+    method: 'POST',
+    body: { title },
+    token,
+  }).then((response) => response.data)
+}
+
+export function updateTask(
+  token: string,
+  id: number,
+  changes: { status: TaskStatus },
+): Promise<Task> {
+  return request<{ data: Task }>(`/api/v1/tasks/${id}`, {
+    method: 'PATCH',
+    body: changes,
+    token,
+  }).then((response) => response.data)
 }
