@@ -30,9 +30,9 @@ El sistema SHALL devolver, en `GET /api/v1/tasks`, todas las tareas del espacio,
 - **WHEN** se pide la lista y no se ha creado ninguna tarea
 - **THEN** el sistema responde 200 con `data` como un array vacío
 
-#### Scenario: Sin orden garantizado
-- **WHEN** se pide la lista con varias tareas
-- **THEN** el sistema no promete ningún criterio de ordenación de las tareas devueltas
+#### Scenario: Sin criterio de orden
+- **WHEN** se pide la lista con un parámetro de ordenación en la petición
+- **THEN** el sistema lo ignora y no promete ningún criterio de ordenación de las tareas devueltas
 
 #### Scenario: Pedir la lista no modifica nada
 - **WHEN** se pide la lista una o varias veces
@@ -158,6 +158,10 @@ El sistema SHALL ofrecer sobre tareas únicamente las operaciones de listar, cre
 - **WHEN** se envía `DELETE /api/v1/tasks/:id`
 - **THEN** el sistema responde 404 y la tarea sigue en la lista
 
+#### Scenario: Endpoints de equipo inexistentes
+- **WHEN** se pide cualquier ruta de equipo, como `GET /api/v1/teams`
+- **THEN** el sistema responde 404
+
 ### Requirement: Pantalla de lista de tareas
 
 La aplicación web SHALL mostrar en `/tasks`, a las personas con sesión, una única lista con todas las tareas del espacio, donde cada fila muestra el título, el nombre del responsable y el estado.
@@ -167,7 +171,7 @@ La aplicación web SHALL mostrar en `/tasks`, a las personas con sesión, una ú
 - **THEN** cada fila muestra su título, el nombre de quien la lleva y su estado como «Pendiente», «En curso» o «Hecho», sin necesidad de abrir nada
 
 #### Scenario: Responsable sin nombre
-- **WHEN** el responsable de una tarea no tiene nombre puesto
+- **WHEN** el responsable de una tarea no tiene nombre puesto, o su nombre está vacío o en blanco
 - **THEN** la fila muestra «Sin nombre» y nunca su email ni su identificador
 
 #### Scenario: Mismo contenido para todos
@@ -223,8 +227,12 @@ La aplicación web SHALL ofrecer en la lista un formulario de creación que pide
 - **THEN** la tarea aparece en la lista sin recargar la página ni navegar a otra pantalla, en «Pendiente» y con su nombre como responsable, y el campo queda vacío para anotar otra
 
 #### Scenario: Envío en curso
-- **WHEN** se está enviando la creación
-- **THEN** el botón queda deshabilitado hasta que termina, para no crear la tarea dos veces
+- **WHEN** se está enviando la creación, ya sea con el botón o pulsando Intro en el campo
+- **THEN** no se admite un segundo envío hasta que termina, para no crear la tarea dos veces, y el botón queda deshabilitado
+
+#### Scenario: Se crea pero falla recargar la lista
+- **WHEN** la tarea se crea correctamente pero la lista no se puede volver a cargar
+- **THEN** el campo queda vacío, la persona ve el aviso de fallo al cargar la lista y no un error de creación, para que no repita la tarea
 
 #### Scenario: Título vacío o en blanco
 - **WHEN** la persona intenta crear sin título o con solo espacios
@@ -261,6 +269,10 @@ La aplicación web SHALL permitir cambiar el estado de cualquier tarea desde su 
 #### Scenario: El cambio falla
 - **WHEN** el servidor rechaza el cambio de estado o no responde
 - **THEN** la fila vuelve al estado anterior y la persona ve un aviso con el motivo en castellano
+
+#### Scenario: Cambio en curso en la fila
+- **WHEN** hay un cambio de estado de una fila pendiente de respuesta
+- **THEN** el selector de esa fila queda deshabilitado hasta que termina, y las demás filas siguen operativas
 
 ### Requirement: Acceso y navegación de la lista
 

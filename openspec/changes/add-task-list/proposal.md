@@ -22,6 +22,8 @@ FlowSync existe para responder «¿en qué está cada uno ahora mismo?» sin int
 - **Longitud máxima del título (PA-9).** 255 es un valor provisional elegido para poder devolver 422; el umbral real es decisión de producto pendiente.
 - **Transiciones de estado (PA-7).** No hay grafo decidido: se permite cualquier transición, también salir de «Hecho», sin confirmación.
 - **Destino por defecto vs. spec `auth`.** La spec viva `auth` (PR #62, aún sin fusionar en esta base) dice que login y rutas desconocidas llevan a `/profile`. Este change lo cambia a `/tasks`; al fusionarse #62 hará falta un delta `MODIFIED` sobre `auth` para esos escenarios.
+- **Responsable por API.** `assigneeId` se acepta en la actualización, pero sin endpoints de equipo y con los ids ocultos en la lista un cliente solo conoce el suyo (vía el perfil): en la práctica solo permite reasignar a uno mismo. Reasignar a otra persona desde la pantalla exige una decisión de producto sobre cómo elegir persona.
+- **Sesión caducada durante el uso.** Un 401 en la lista muestra un aviso pero no cierra la sesión ni limpia el token; queda por decidir qué debe pasar.
 - Fuera de este change y anotados en el backlog: tope de tareas «En curso» por persona (PA-4) y qué ve quien tiene abierta una tarea que cambia de manos (PA-8).
 
 ## Capabilities

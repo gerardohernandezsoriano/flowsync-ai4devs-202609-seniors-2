@@ -4,6 +4,7 @@
 
 ## 1. Backend: datos y modelo
 
+- [ ] 1.0 Antes de tocar nada, anotar con `git status` y `git diff --stat` los cambios previos sin commitear (`backend/database/schema.ts`, `backend/package.json`, `backend/package-lock.json` y los `package*.json` sin seguimiento de la raíz) y no incluirlos en ningún commit de este change salvo la regeneración de `schema.ts` que provoque la migración; verificar al final con `git diff <commit base> -- '**/package.json'` que este change no añade dependencias
 - [ ] 1.1 Crear la migración de `tasks` (`title` string 255 no nulo, `status` string no nulo con valor por defecto `pending`, `assignee_id` no nulo referenciando `users.id`, timestamps estándar, sin ninguna columna de fecha de vencimiento) y verificar que `node ace migration:run` la aplica sin errores
 - [ ] 1.2 Comprobar que `database/schema.ts` se ha regenerado con la clase de esquema de tareas y que no se editó a mano, y añadir el modelo de tarea que extiende esa clase generada, con solo la relación `assignee` hacia el usuario; verificar con `npm run typecheck` en `backend/`
 
@@ -13,7 +14,7 @@
 - [ ] 2.2 Crear el transformer de tarea que expone solo `id`, `title`, `status` y `assignee.fullName`, sin email, id de usuario ni fechas; verificar con `npm run typecheck`
 - [ ] 2.3 Crear el controlador de tareas con `index` (carga `assignee`, sin `orderBy`), `store` (responsable = persona autenticada, `status` = `pending`) y `update` (`findOrFail`, aplica `status` y/o `assigneeId`, devuelve la tarea con el responsable); todo con `serialize` y el transformer; verificar con `npm run typecheck` y `npm run lint`
 - [ ] 2.4 Registrar en `start/routes.ts` `GET /tasks`, `POST /tasks` y `PATCH /tasks/:id` dentro de `/api/v1` y bajo `middleware.auth()`, sin rutas de lectura individual ni de borrado; verificar con `node ace list:routes` que aparecen exactamente esas tres y arrancar el servidor para regenerar `.adonisjs/` y commitear el diff
-- [ ] 2.5 Verificar a mano con `curl` contra el servidor en marcha: 401 sin token en las tres operaciones; crear con `{"title":"x"}` devuelve `pending` y el nombre de quien crea; título ausente, en blanco y de 256 caracteres dan 422 sobre `title`; con 255 se crea; `status` o `assigneeId` en la creación se ignoran; `PATCH` con estado válido da 200, con `blocked` da 422, sin campos da 422, con responsable inexistente da 422 y con id inexistente da 404; `GET` y `DELETE` sobre `/tasks/1` dan 404; la respuesta no contiene email ni fechas
+- [ ] 2.5 Verificar a mano con `curl` contra el servidor en marcha (con el token en una variable de entorno, sin pegarlo en el historial ni en el PR): 401 sin token en las tres operaciones; crear con `{"title":"x"}` devuelve `pending` y el nombre de quien crea; título ausente, en blanco y de 256 caracteres dan 422 sobre `title`; con 255 se crea; `status` o `assigneeId` en la creación se ignoran; `PATCH` con estado válido da 200, con `blocked` da 422, sin campos da 422, con responsable inexistente da 422 y con id inexistente da 404; `GET` y `DELETE` sobre `/tasks/1` y `GET /api/v1/teams` dan 404; un parámetro de orden en el listado se ignora; la respuesta no contiene email ni fechas
 
 ## 3. Frontend: capa de API y tipos
 
@@ -34,4 +35,4 @@
 ## 6. Documentación e integración
 
 - [ ] 6.1 Añadir las tres rutas de tareas a la tabla de rutas de `CLAUDE.md` y verificar que coincide con la salida de `node ace list:routes`
-- [ ] 6.2 Recorrido final con `npm run typecheck`, `npm run lint` y `npm run build` en sus capas, y un flujo completo a mano con dos cuentas (registro, crear, ver la tarea ajena, cambiar su estado, recargar), comprobando que ningún `package.json` ha ganado dependencias
+- [ ] 6.2 Recorrido final con `npm run typecheck`, `npm run lint` y `npm run build` en sus capas, y un flujo completo a mano con dos cuentas (registro, crear, ver la tarea ajena, cambiar su estado, recargar), comprobando con la diferencia contra el commit base que ningún `package.json` ha ganado dependencias por culpa de este change
