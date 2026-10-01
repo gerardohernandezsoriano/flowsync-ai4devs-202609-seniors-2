@@ -39,7 +39,7 @@ El sistema SHALL permitir que una tarea tenga una fecha de vencimiento de calend
 - **THEN** el sistema responde 422 con un error sobre `dueDate` y la tarea conserva la fecha que tuviera
 
 #### Scenario: Fecha incompleta o con hora
-- **WHEN** se envía un `dueDate` incompleto, como `2026-10`, o con hora, como `2026-10-05T10:00:00`, o que no es texto
+- **WHEN** se envía un `dueDate` incompleto, como `2026-10`, o con hora, como `2026-10-05T10:00:00`, formado solo por espacios o que no es texto
 - **THEN** el sistema responde 422 con un error sobre `dueDate` y la tarea conserva la fecha que tuviera
 
 #### Scenario: Otras ediciones no tocan la fecha
@@ -115,7 +115,7 @@ El sistema SHALL calcular `isOverdue` respecto al día que el cliente indique en
 - **THEN** el sistema calcula `isOverdue` con el día actual del servidor en UTC
 
 #### Scenario: Día de referencia mal formado
-- **WHEN** se envía un `today` que no es una fecha `YYYY-MM-DD` real
+- **WHEN** se envía un `today` vacío o que no es una fecha `YYYY-MM-DD` real, existan o no las tareas pedidas
 - **THEN** el sistema responde 422 con un error sobre `today` y no devuelve ni modifica ninguna tarea
 
 #### Scenario: Aplica a todas las operaciones
@@ -160,7 +160,7 @@ El sistema SHALL devolver una tarea concreta en `GET /api/v1/tasks/:id` a cualqu
 
 ### Requirement: Página de la tarea con su fecha
 
-La aplicación web SHALL mostrar en `/tasks/:id`, a las personas con sesión, una página mínima de la tarea con su título, la fecha de vencimiento editable y la señal de vencida, sin mostrar ni editar responsable, estado ni título.
+La aplicación web SHALL mostrar en `/tasks/:id`, a las personas con sesión, una página mínima de la tarea con su título, la fecha de vencimiento editable y la señal de vencida, sin mostrar responsable ni estado y sin permitir editar el título.
 
 #### Scenario: Abrir desde la lista
 - **WHEN** una persona pulsa el título de una tarea en la lista
@@ -168,15 +168,23 @@ La aplicación web SHALL mostrar en `/tasks/:id`, a las personas con sesión, un
 
 #### Scenario: Poner la fecha
 - **WHEN** la persona elige una fecha completa en el campo
-- **THEN** la fecha queda guardada sin pulsar ningún botón de guardar y se ve reflejada al instante, sin recargar ni reabrir la tarea
+- **THEN** la fecha queda guardada sin pulsar ningún botón de guardar y se ve reflejada sin recargar ni reabrir la tarea
+
+#### Scenario: Teclear el año
+- **WHEN** la persona teclea el año de la fecha dígito a dígito
+- **THEN** no se guarda ni se avisa de ningún año intermedio, y solo se guarda la fecha cuando está completa
+
+#### Scenario: Año fuera de rango
+- **WHEN** la persona deja una fecha con un año de menos de 4 dígitos o fuera de 1000–9999
+- **THEN** ve junto al campo que esa fecha no es válida, no se guarda nada y la tarea conserva la fecha que tuviera
 
 #### Scenario: Quitar la fecha
 - **WHEN** la persona pulsa la acción de quitar la fecha
 - **THEN** el campo queda vacío y la fecha se elimina de inmediato, sin diálogo de confirmación
 
-#### Scenario: Fecha incompleta o imposible
-- **WHEN** la persona deja la fecha a medias o escribe una que no existe
-- **THEN** la tarea conserva la fecha que tuviera y ve junto al campo, en lenguaje corriente, que esa fecha no es válida
+#### Scenario: Fecha incompleta, imposible o campo vaciado a mano
+- **WHEN** la persona deja la fecha a medias, escribe una que no existe o borra el contenido del campo sin usar la acción de quitar
+- **THEN** la tarea conserva la fecha que tuviera y ve junto al campo, en lenguaje corriente, que esa fecha no es válida o está incompleta y que para quitarla debe usar la acción de quitar fecha
 
 #### Scenario: Señal de vencida
 - **WHEN** la tarea tiene `isOverdue` a `true`
@@ -192,7 +200,7 @@ La aplicación web SHALL mostrar en `/tasks/:id`, a las personas con sesión, un
 
 #### Scenario: Aplazar o quitar resuelve el vencimiento
 - **WHEN** la persona cambia a una fecha posterior a hoy o quita la fecha de una tarea vencida
-- **THEN** la señal de vencida desaparece al instante
+- **THEN** la señal de vencida desaparece en cuanto el servidor responde, sin recargar la página
 
 #### Scenario: El día de la persona
 - **WHEN** la página pide o guarda una tarea
@@ -205,6 +213,14 @@ La aplicación web SHALL mostrar en `/tasks/:id`, a las personas con sesión, un
 #### Scenario: Tarea inexistente
 - **WHEN** la persona abre una tarea que ya no existe
 - **THEN** ve un aviso de que la tarea no existe y un enlace para volver a la lista
+
+#### Scenario: Fallo al cargar la tarea
+- **WHEN** la tarea no se puede cargar por un fallo de red o del servidor
+- **THEN** la persona ve un aviso en castellano de que no se pudo cargar la tarea y no una página vacía
+
+#### Scenario: Sin sesión
+- **WHEN** una persona sin sesión abre `/tasks/:id`
+- **THEN** es llevada a `/login` y no ve ninguna tarea
 
 #### Scenario: Teclado
 - **WHEN** una persona usa solo el teclado
