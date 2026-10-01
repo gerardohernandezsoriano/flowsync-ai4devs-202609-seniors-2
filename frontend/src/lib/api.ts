@@ -216,9 +216,12 @@ export function listTasks(token: string): Promise<Task[]> {
 }
 
 export function getTask(token: string, id: number | string): Promise<Task> {
-  return request<{ data: Task }>(withToday(`/api/v1/tasks/${id}`), {
-    token,
-  }).then((response) => response.data)
+  return request<{ data: Task }>(
+    withToday(`/api/v1/tasks/${encodeURIComponent(id)}`),
+    {
+      token,
+    },
+  ).then((response) => response.data)
 }
 
 export function createTask(token: string, title: string): Promise<Task> {
@@ -235,9 +238,12 @@ export function updateTask(
   id: number | string,
   changes: { status?: TaskStatus; dueDate?: string | null },
 ): Promise<Task> {
-  return request<{ data: Task }>(withToday(`/api/v1/tasks/${id}`), {
-    method: 'PATCH',
-    body: changes,
-    token,
-  }).then((response) => response.data)
+  return request<{ data: Task }>(
+    withToday(`/api/v1/tasks/${encodeURIComponent(id)}`),
+    {
+      method: 'PATCH',
+      body: changes,
+      token,
+    },
+  ).then((response) => response.data)
 }

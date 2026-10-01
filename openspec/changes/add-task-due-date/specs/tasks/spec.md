@@ -171,8 +171,8 @@ La aplicación web SHALL mostrar en `/tasks/:id`, a las personas con sesión, un
 - **THEN** la fecha queda guardada sin pulsar ningún botón de guardar y se ve reflejada sin recargar ni reabrir la tarea
 
 #### Scenario: Teclear el año
-- **WHEN** la persona teclea el año de la fecha dígito a dígito
-- **THEN** no se guarda ni se avisa de ningún año intermedio, y solo se guarda la fecha cuando está completa
+- **WHEN** la persona teclea el año de la fecha dígito a dígito, sin pausas de más de unos instantes
+- **THEN** no se guarda ni se avisa de ningún año intermedio, y solo se guarda la fecha cuando está completa; si se detiene con el año a medias, se le avisa de que la fecha no es válida y no se guarda
 
 #### Scenario: Año fuera de rango
 - **WHEN** la persona deja una fecha con un año de menos de 4 dígitos o fuera de 1000–9999

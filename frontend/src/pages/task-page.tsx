@@ -39,20 +39,36 @@ function checkDate(value: string): string | null {
 
 type LoadState = 'loading' | 'ready' | 'not-found' | 'error'
 
+/**
+ * Cada tarea monta su propia instancia (`key={id}`): al cambiar de tarea sin
+ * salir de la ruta no sobrevive ningún temporizador, guardado en vuelo ni
+ * referencia de la anterior.
+ */
 export function TaskPage() {
   const { id = '' } = useParams()
+
+  return <TaskDetail key={id} id={id} />
+}
+
+function TaskDetail({ id }: { id: string }) {
   const { token } = useAuth()
   const [task, setTask] = useState<Task | null>(null)
   const [loadState, setLoadState] = useState<LoadState>('loading')
+  const [loadMessage, setLoadMessage] = useState<string | null>(null)
   const [dateError, setDateError] = useState<string | null>(null)
   const [saveError, setSaveError] = useState<string | null>(null)
 
   const inputRef = useRef<HTMLInputElement>(null)
   const timerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
+  // Lo último tecleado y pendiente de guardar, por si la página se cierra antes.
+  const pendingValueRef = useRef('')
   // Última fecha que el servidor confirmó ('' si no tiene).
   const committedRef = useRef('')
-  // Solo cuenta la respuesta del último guardado: las tardías se descartan.
-  const requestRef = useRef(0)
+  // Los guardados van de uno en uno: mientras hay uno en vuelo, solo se
+  // recuerda el último valor pedido. Así las respuestas no pueden cruzarse y
+  // `committedRef` es siempre lo que el servidor tiene.
+  const inFlightRef = useRef(false)
+  const queuedRef = useRef<string | null>(null)
   // Si algo falla con el campo enfocado, volver a la fecha anterior se aplaza
   // hasta que se suelte para no pisar lo que la persona está tecleando.
   const revertOnBlurRef = useRef(false)
@@ -60,7 +76,6 @@ export function TaskPage() {
   useEffect(() => {
     if (!token) return
     let cancelled = false
-    setLoadState('loading')
 
     api
       .getTask(token, id)
@@ -72,11 +87,17 @@ export function TaskPage() {
       })
       .catch((error: unknown) => {
         if (cancelled) return
-        setLoadState(
-          error instanceof ApiError && error.status === 404
-            ? 'not-found'
-            : 'error',
+        if (error instanceof ApiError && error.status === 404) {
+          setLoadState('not-found')
+          return
+        }
+        // Con la sesión caducada, decirlo; con cualquier otro fallo, lo genérico.
+        setLoadMessage(
+          error instanceof ApiError && error.status === 401
+            ? error.message
+            : null,
         )
+        setLoadState('error')
       })
 
     return () => {
@@ -84,7 +105,19 @@ export function TaskPage() {
     }
   }, [token, id])
 
-  useEffect(() => () => clearTimeout(timerRef.current), [])
+  // Al salir de la página (atrás del navegador, otro enlace) lo que estaba a
+  // medio teclear y era válido se guarda en lugar de perderse en silencio.
+  useEffect(
+    () => () => {
+      if (timerRef.current === undefined || !token) return
+      clearTimeout(timerRef.current)
+      const value = pendingValueRef.current
+      if (checkDate(value) === null && value !== committedRef.current) {
+        void api.updateTask(token, id, { dueDate: value }).catch(() => {})
+      }
+    },
+    [token, id],
+  )
 
   // `ProtectedRoute` garantiza que aquí ya hay sesión resuelta.
   if (!token) return null
@@ -101,23 +134,46 @@ export function TaskPage() {
     }
   }
 
-  const save = async (dueDate: string | null) => {
-    const request = ++requestRef.current
+  /** `''` quita la fecha. Se encola si ya hay un guardado en vuelo. */
+  const save = async (value: string) => {
+    if (inFlightRef.current) {
+      queuedRef.current = value
+      return
+    }
+
+    inFlightRef.current = true
     setSaveError(null)
+    let failed = false
 
     try {
-      const updated = await api.updateTask(token, id, { dueDate })
-      if (request !== requestRef.current) return
+      const updated = await api.updateTask(token, id, {
+        dueDate: value === '' ? null : value,
+      })
       committedRef.current = updated.dueDate ?? ''
       // El veredicto de vencida es el que devuelve el servidor, no uno propio.
       setTask(updated)
     } catch (error) {
-      if (request !== requestRef.current) return
+      failed = true
+      queuedRef.current = null
       setSaveError(
         error instanceof ApiError
-          ? error.message
+          ? error.status === 404
+            ? 'Esta tarea ya no existe.'
+            : error.message
           : 'No hemos podido guardar la fecha.',
       )
+    } finally {
+      inFlightRef.current = false
+    }
+
+    const queued = queuedRef.current
+    queuedRef.current = null
+    if (!failed && queued !== null && queued !== committedRef.current) {
+      void save(queued)
+    } else if (document.activeElement !== inputRef.current) {
+      // Sin nada más en cola, el campo vuelve a mostrar lo que el servidor tiene.
+      restoreCommitted()
+    } else if (failed) {
       revert()
     }
   }
@@ -131,12 +187,16 @@ export function TaskPage() {
       revert()
       return
     }
-    if (value !== committedRef.current) void save(value)
+    if (value !== committedRef.current || inFlightRef.current) {
+      void save(value)
+    }
   }
 
   const handleChange = () => {
     clearTimeout(timerRef.current)
     setDateError(null)
+    setSaveError(null)
+    pendingValueRef.current = inputRef.current?.value ?? ''
     timerRef.current = setTimeout(() => {
       timerRef.current = undefined
       commitTypedValue()
@@ -161,8 +221,13 @@ export function TaskPage() {
     timerRef.current = undefined
     setDateError(null)
     revertOnBlurRef.current = false
-    if (inputRef.current) inputRef.current.value = ''
-    void save(null)
+    if (inputRef.current) {
+      inputRef.current.value = ''
+      // El botón se deshabilita al quitar la fecha: el foco pasa al campo para
+      // que quien usa el teclado no lo pierda.
+      inputRef.current.focus()
+    }
+    void save('')
   }
 
   const back = (
@@ -193,7 +258,8 @@ export function TaskPage() {
             <AlertDescription>
               {loadState === 'not-found'
                 ? 'Esta tarea no existe.'
-                : 'No hemos podido cargar la tarea. Inténtalo de nuevo en un momento.'}
+                : (loadMessage ??
+                  'No hemos podido cargar la tarea. Inténtalo de nuevo en un momento.')}
             </AlertDescription>
           </Alert>
         )}
@@ -208,15 +274,16 @@ export function TaskPage() {
             </CardHeader>
 
             <CardContent className="grid gap-4">
-              {task.isOverdue && (
-                <p
-                  role="status"
-                  className="border-destructive text-destructive inline-flex w-fit items-center gap-2 rounded-md border px-3 py-1 text-sm font-medium"
-                >
-                  <CalendarX2Icon className="size-4" aria-hidden="true" />
-                  Vencida
-                </p>
-              )}
+              {/* Región viva siempre montada: si naciera con el texto dentro,
+                  los lectores de pantalla no lo anunciarían. */}
+              <div role="status" aria-live="polite">
+                {task.isOverdue && (
+                  <p className="border-destructive text-destructive inline-flex w-fit items-center gap-2 rounded-md border px-3 py-1 text-sm font-medium">
+                    <CalendarX2Icon className="size-4" aria-hidden="true" />
+                    Vencida
+                  </p>
+                )}
+              </div>
 
               {saveError && (
                 <Alert variant="destructive">
@@ -248,10 +315,12 @@ export function TaskPage() {
                     Quitar fecha
                   </Button>
                 </div>
-                <FieldError
-                  id="dueDate-error"
-                  message={dateError ?? undefined}
-                />
+                <div aria-live="polite">
+                  <FieldError
+                    id="dueDate-error"
+                    message={dateError ?? undefined}
+                  />
+                </div>
               </div>
             </CardContent>
           </Card>
