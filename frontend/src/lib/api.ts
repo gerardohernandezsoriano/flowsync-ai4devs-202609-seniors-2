@@ -45,6 +45,8 @@ const FIELD_LABELS: Record<string, string> = {
   title: 'el título',
   status: 'el estado',
   assigneeId: 'el responsable',
+  dueDate: 'la fecha',
+  today: 'el día de hoy',
 }
 
 const label = (field?: string) => FIELD_LABELS[field ?? ''] ?? 'el campo'
@@ -64,6 +66,9 @@ function translate(error: BackendError): string {
     // lo que la persona tiene que hacer es escribir un título.
     return 'Escribe un título para la tarea.'
   }
+
+  if (field === 'dueDate') return 'Esa fecha no es válida.'
+  if (field === 'today') return 'No se ha podido leer el día de hoy.'
 
   if (rule === 'enum') return 'Ese estado no es válido.'
 
@@ -190,26 +195,47 @@ export function logout(token: string): Promise<void> {
   )
 }
 
+/**
+ * El día de calendario de quien mira (`YYYY-MM-DD`). Se arma con los
+ * componentes de la fecha local y no con `toISOString()`, que da el día UTC y
+ * contaría como "mañana" o "ayer" a quien esté en otro huso.
+ */
+export function localDay(date = new Date()): string {
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+  return `${date.getFullYear()}-${month}-${day}`
+}
+
+/** Toda llamada de tareas manda el día de la persona: el veredicto de vencida es suyo. */
+const withToday = (path: string) => `${path}?today=${localDay()}`
+
 export function listTasks(token: string): Promise<Task[]> {
-  return request<{ data: Task[] }>('/api/v1/tasks', { token }).then(
+  return request<{ data: Task[] }>(withToday('/api/v1/tasks'), { token }).then(
     (response) => response.data,
   )
 }
 
+export function getTask(token: string, id: number | string): Promise<Task> {
+  return request<{ data: Task }>(withToday(`/api/v1/tasks/${id}`), {
+    token,
+  }).then((response) => response.data)
+}
+
 export function createTask(token: string, title: string): Promise<Task> {
-  return request<{ data: Task }>('/api/v1/tasks', {
+  return request<{ data: Task }>(withToday('/api/v1/tasks'), {
     method: 'POST',
     body: { title },
     token,
   }).then((response) => response.data)
 }
 
+/** `dueDate: null` quita la fecha; si la clave no viaja, la fecha no se toca. */
 export function updateTask(
   token: string,
-  id: number,
-  changes: { status: TaskStatus },
+  id: number | string,
+  changes: { status?: TaskStatus; dueDate?: string | null },
 ): Promise<Task> {
-  return request<{ data: Task }>(`/api/v1/tasks/${id}`, {
+  return request<{ data: Task }>(withToday(`/api/v1/tasks/${id}`), {
     method: 'PATCH',
     body: changes,
     token,

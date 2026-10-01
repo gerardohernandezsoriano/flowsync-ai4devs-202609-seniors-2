@@ -98,6 +98,12 @@ Rutas actuales (`start/routes.ts`), todas bajo `/api/v1`:
 | POST | `/api/v1/auth/login` | `AccessTokensController.store` | no |
 | GET | `/api/v1/account/profile` | `ProfileController.show` | sí |
 | POST | `/api/v1/account/logout` | `AccessTokensController.destroy` | sí |
+| GET | `/api/v1/tasks` | `TasksController.index` | sí |
+| POST | `/api/v1/tasks` | `TasksController.store` | sí |
+| GET | `/api/v1/tasks/:id` | `TasksController.show` | sí |
+| PATCH | `/api/v1/tasks/:id` | `TasksController.update` | sí |
+
+Las rutas de tareas aceptan `?today=YYYY-MM-DD` (el día de calendario del cliente): con él el backend calcula `isOverdue`, que nunca se persiste; sin él usa el día UTC del servidor.
 
 ### Validación
 
