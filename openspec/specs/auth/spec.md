@@ -18,6 +18,14 @@ El sistema SHALL crear una cuenta nueva y abrir sesión en la misma respuesta cu
 - **WHEN** se envía una petición de registro válida con `fullName` a `null`
 - **THEN** el sistema crea la cuenta y devuelve `data.user.fullName` a `null`
 
+#### Scenario: Nombre vacío o en blanco
+- **WHEN** se envía una petición de registro válida con `fullName` como texto vacío o solo espacios
+- **THEN** el sistema crea la cuenta y devuelve `data.user.fullName` a `null`
+
+#### Scenario: Email sin normalizar
+- **WHEN** se envía una petición de registro con un email con mayúsculas, como "Ada@Example.com"
+- **THEN** el sistema lo guarda y lo devuelve tal cual, sin pasarlo a minúsculas
+
 ### Requirement: Validación del registro
 
 El sistema SHALL rechazar con 422 los registros que incumplan las reglas de email y contraseña, y SHALL NOT crear ninguna cuenta en ese caso. Cada error de la respuesta (`errors`) indica el `field` afectado y la `rule` incumplida.
@@ -32,15 +40,15 @@ El sistema SHALL rechazar con 422 los registros que incumplan las reglas de emai
 
 #### Scenario: Contraseña fuera de longitud
 - **WHEN** se envía una petición de registro con una contraseña de menos de 8 o de más de 32 caracteres
-- **THEN** el sistema responde 422 con un error sobre `password`
+- **THEN** el sistema responde 422 con un error sobre `password`; si la confirmación tiene también longitud inválida, el error se repite sobre `passwordConfirmation`
 
 #### Scenario: Confirmación distinta
 - **WHEN** se envía una petición de registro cuyo `passwordConfirmation` no coincide con `password`
 - **THEN** el sistema responde 422 con un error sobre `passwordConfirmation` cuya regla es `sameAs`
 
 #### Scenario: Campos obligatorios ausentes
-- **WHEN** se envía una petición de registro sin `email` o sin `password`
-- **THEN** el sistema responde 422 con un error de regla `required` sobre cada campo ausente
+- **WHEN** se envía una petición de registro en la que falta la clave `fullName`, `email`, `password` o `passwordConfirmation`
+- **THEN** el sistema responde 422 con un error de regla `required` sobre cada campo ausente (`fullName` es obligatorio como clave, aunque su valor pueda ser `null`)
 
 ### Requirement: Inicio de sesión por API
 
@@ -71,16 +79,20 @@ El sistema SHALL devolver los datos de la persona autenticada en `GET /api/v1/ac
 - **THEN** el sistema responde 200 con `data` (con `id`, `fullName`, `email`, `createdAt`, `updatedAt` e `initials`) y sin contraseña
 
 #### Scenario: Iniciales a partir del nombre
-- **WHEN** la cuenta tiene un nombre completo con al menos dos palabras
+- **WHEN** la cuenta tiene un nombre completo de al menos dos palabras separadas por un único espacio
 - **THEN** `initials` son en mayúsculas las primeras letras de las dos primeras palabras (por ejemplo, "Ada Lovelace" da "AL")
 
 #### Scenario: Iniciales sin nombre completo
 - **WHEN** la cuenta no tiene nombre completo
-- **THEN** `initials` son en mayúsculas las dos primeras letras de la parte local del email
+- **THEN** `initials` son en mayúsculas la primera letra de la parte local del email más la primera letra de su dominio (por ejemplo, "b@example.com" da "BE"; comportamiento observado, probablemente no intencionado)
 
 #### Scenario: Nombre de una sola palabra
 - **WHEN** la cuenta tiene un nombre completo de una sola palabra
 - **THEN** `initials` son en mayúsculas las dos primeras letras de esa palabra
+
+#### Scenario: Nombre con espacios dobles
+- **WHEN** la cuenta tiene un nombre como "Ada  Lovelace", con dos espacios entre palabras
+- **THEN** `initials` son en mayúsculas las dos primeras letras de la primera palabra ("AD"), no las de ambas palabras
 
 ### Requirement: Cierre de sesión por API
 
