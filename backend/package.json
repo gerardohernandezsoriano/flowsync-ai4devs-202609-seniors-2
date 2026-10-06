@@ -65,7 +65,7 @@
     "@japa/api-client": "^3.2.1",
     "@tuyau/core": "^1.2.2",
     "@vinejs/vine": "^4.4.0",
-    "better-sqlite3": "^12.10.0",
+    "better-sqlite3": "^13.0.3",
     "luxon": "^3.7.2",
     "reflect-metadata": "^0.2.2"
   },
@@ -75,5 +75,9 @@
       "./app/middleware/*.ts"
     ]
   },
-  "prettier": "@adonisjs/prettier-config"
+  "prettier": "@adonisjs/prettier-config",
+  "allowScripts": {
+    "better-sqlite3@13.0.3": true,
+    "@swc/core@1.15.47": true
+  }
 }
