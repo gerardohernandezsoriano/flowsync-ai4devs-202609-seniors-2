@@ -22,14 +22,7 @@ Borra el ejemplo de abajo cuando escribas el primero.
 
 ## Prompt 1
 
-**Modelo:** Opus 1M xHigh
+**Modelo:** Sonnet 1M xHigh
 **Herramienta:** Claude Code
 
-```
-Este es el ejemplo. Bórralo.
-
-El prompt va aquí dentro, entero y con sus saltos de línea,
-para que se sepa dónde empieza y dónde acaba.
-```
-
-**Qué salió:** (opcional, una línea) funcionó a la primera / tuve que insistir / me inventó una ruta que no existe.
+Para el requisito Lo que cada tarea muestra de su responsable crea una test por cada scenario,  Déjalos escritos en archivos versionados del repositorio dentro de backend/tests/functional/tasks/, siguiendo el estilo de los que ya hay en backend/tests/functional/auth/. No toques nada fuera de backend/tests/ Trabaja solo ese requisito, no la capability entera
