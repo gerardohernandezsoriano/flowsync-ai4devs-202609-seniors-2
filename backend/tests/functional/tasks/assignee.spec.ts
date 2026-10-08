@@ -42,7 +42,7 @@ test.group('Tasks | responsable', (group) => {
     suelta.assertStatus(200)
     lista.assertStatus(200)
 
-    const enLista = lista.body().data.find((t: any) => t.id === tarea.id)
+    const enLista = (lista.body().data as any[]).find((t: any) => t.id === tarea.id)
 
     for (const assignee of [suelta.body().data.assignee, enLista.assignee]) {
       assert.equal(assignee.fullName, 'Ada Lovelace')
@@ -62,7 +62,7 @@ test.group('Tasks | responsable', (group) => {
       .header('Authorization', `Bearer ${token}`)
     const lista = await client.get('/api/v1/tasks').header('Authorization', `Bearer ${token}`)
 
-    const enLista = lista.body().data.find((t: any) => t.id === tarea.id)
+    const enLista = (lista.body().data as any[]).find((t: any) => t.id === tarea.id)
 
     for (const assignee of [suelta.body().data.assignee, enLista.assignee]) {
       assert.notProperty(assignee, 'email')
@@ -85,7 +85,7 @@ test.group('Tasks | responsable', (group) => {
       .header('Authorization', `Bearer ${token}`)
     const lista = await client.get('/api/v1/tasks').header('Authorization', `Bearer ${token}`)
 
-    const enLista = lista.body().data.find((t: any) => t.id === tarea.id)
+    const enLista = (lista.body().data as any[]).find((t: any) => t.id === tarea.id)
 
     for (const assignee of [suelta.body().data.assignee, enLista.assignee]) {
       assert.isNull(assignee.fullName)
