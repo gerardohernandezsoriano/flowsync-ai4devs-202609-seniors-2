@@ -2,6 +2,9 @@
 
 ## Estado
 
+Reemplazada el 2027-10-08 por
+[0002. Los tests de integración como única fuente de verdad ejecutable](0002-tests-como-fuente-de-verdad-ejecutable.md).
+
 Aceptada. Se registra a posteriori, el 2026-10-08. La práctica está en vigor desde el
 2026-08-13, cuando se archivaron los tres primeros changes.
 
