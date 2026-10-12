@@ -26,10 +26,10 @@ Borra el ejemplo de abajo cuando escribas el primero.
 **Herramienta:** Claude Code
 
 ```
-Este es el ejemplo. Bórralo.
+contrasta las reglas de proceso con los últimos 15 commits del repositorio y el estado actual de los archivos del proyecto. Guarda el resultado en docs/auditoria/GHS.md, no en el chat.
 
-El prompt va aquí dentro, entero y con sus saltos de línea,
-para que se sepa dónde empieza y dónde acaba.
-```
+Usa una fila por regla 
 
 **Qué salió:** (opcional, una línea) funcionó a la primera / tuve que insistir / me inventó una ruta que no existe.
+
+
