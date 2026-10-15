@@ -10,7 +10,8 @@ diff|view|comment` y la de comentarios en línea: no puede editar ni commitear.
 
 ## Pasos manuales pendientes
 
-Hasta hacer esto, el workflow existe pero no funciona.
+Hasta hacer esto, el workflow existe pero no funciona. La calibración del revisor
+ya está escrita en `REVIEW.md`, en la raíz; se edita ahí.
 
 1. **Instalar la GitHub App de Claude** en el repositorio (<https://github.com/apps/claude>,
    o `/install-github-app` desde Claude Code). La acción cambia el token OIDC del job
@@ -18,10 +19,7 @@ Hasta hacer esto, el workflow existe pero no funciona.
    instalada no puede comentar. Hace falta ser admin del repo.
 2. **Guardar la credencial como secreto del repositorio** (Settings → Secrets and variables
    → Actions). Ver la sección siguiente: el nombre del secreto depende del camino.
-3. **Crear `docs/revisor-calibracion.md`.** El prompt le pide al revisor que lo lea antes
-   que nada para saber qué es grave y cuántas sugerencias menores caben. Hoy no existe:
-   el revisor lo dirá en el resumen y aplicará un tope de tres sugerencias menores.
-4. **Subir la rama y abrir un PR** para ver la primera ejecución. El workflow tiene que estar
+3. **Subir la rama y abrir un PR** para ver la primera ejecución. El workflow tiene que estar
    en la rama del PR para que se lance.
 
 ## Credencial: dos caminos, no intercambiables

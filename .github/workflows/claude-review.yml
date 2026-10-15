@@ -34,9 +34,9 @@ jobs:
 
             Revisa este cambio propuesto de FlowSync.
 
-            1. Lee primero `docs/revisor-calibracion.md`: dice qué se considera
-               grave y cuántas sugerencias menores caben. Si no existe, dilo en el
-               comentario de resumen y limita las sugerencias menores a tres.
+            1. Lee primero `REVIEW.md`: dice qué se considera grave, cuántas
+               sugerencias menores caben, dónde no reportar y cómo citar la
+               evidencia. Sus reglas mandan sobre el resto de este prompt.
             2. Mira el diff con `gh pr diff` y abre con Read, Grep y Glob los
                archivos que necesites para entenderlo, incluidos `CLAUDE.md` y,
                si el cambio toca `tasks`, `openspec/specs/tasks/spec.md`.
