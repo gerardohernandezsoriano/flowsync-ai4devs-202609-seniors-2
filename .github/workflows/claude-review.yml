@@ -1,0 +1,53 @@
+name: Revisor de código (Claude)
+
+on:
+  pull_request:
+    types: [opened, synchronize, ready_for_review, reopened]
+
+# Un push nuevo al PR cancela la revisión anterior en vez de pagar las dos.
+concurrency:
+  group: claude-review-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  revisar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      pull-requests: write
+      # La acción cambia el token OIDC del job por uno de la GitHub App de Claude.
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+          persist-credentials: false
+
+      - uses: anthropics/claude-code-action@v1
+        with:
+          # Camino de suscripción. Para clave de API de la consola, ver docs/ci-revisor.md.
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          prompt: |
+            REPO: ${{ github.repository }}
+            PR NUMBER: ${{ github.event.pull_request.number }}
+
+            Revisa este cambio propuesto de FlowSync.
+
+            1. Lee primero `REVIEW.md`: dice qué se considera grave, cuántas
+               sugerencias menores caben, dónde no reportar y cómo citar la
+               evidencia. Sus reglas mandan sobre el resto de este prompt.
+            2. Mira el diff con `gh pr diff` y abre con Read, Grep y Glob los
+               archivos que necesites para entenderlo, incluidos `CLAUDE.md` y,
+               si el cambio toca `tasks`, `openspec/specs/tasks/spec.md`.
+            3. Publica cada hallazgo como comentario en línea sobre la línea
+               afectada (mcp__github_inline_comment__create_inline_comment), con
+               su gravedad y la evidencia. Al final, un único comentario de
+               resumen con `gh pr comment`.
+
+            No redirijas la salida de ningún comando a ficheros (`>`, `>>`, `tee`)
+            ni la reproceses desde disco: lee directamente la salida que devuelve
+            el comando. No edites archivos ni hagas commits.
+          claude_args: |
+            --model sonnet --effort medium --max-turns 40
+            --allowedTools "Read,Grep,Glob,mcp__github_inline_comment__create_inline_comment,Bash(gh pr comment:*),Bash(gh pr diff:*),Bash(gh pr view:*)"
